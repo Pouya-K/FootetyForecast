@@ -5,18 +5,18 @@ class MatchPredictor(nn.Module):
     def __init__(self, input_size):
         super().__init__()
         self.shared = nn.Sequential(
-            nn.Linear(input_size, 64),
+            nn.Linear(input_size, 128),
             nn.ReLU(),
             nn.Dropout(0.2),
-            nn.Linear(64, 32),
+            nn.Linear(128, 64),
             nn.ReLU(),
             nn.Dropout(0.2),
         )
 
-        self.wdl_head = nn.Linear(32, 3)
-        self.goals_head = nn.Linear(32, 2)
-        self.corners_head = nn.Linear(32, 2)
-        self.cards_head = nn.Linear(32, 2)
+        self.wdl_head = nn.Linear(64, 3)
+        self.goals_head = nn.Linear(64, 2)
+        self.corners_head = nn.Linear(64, 2)
+        self.cards_head = nn.Linear(64, 2)
 
     def forward(self, x):
         shared = self.shared(x)

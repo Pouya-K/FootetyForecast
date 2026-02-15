@@ -2,19 +2,18 @@ import pandas as pd
 import torch
 import torch.nn as nn 
 from architecture import MatchPredictor
+from sklearn.preprocessing import StandardScaler
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 df = pd.read_csv(os.path.join(BASE_DIR, "ml", "data", "features.csv"))
 
-feature_cols = [
-    "home_avg_goals_scored", "home_avg_goals_conceded",
-    "home_avg_corners", "home_avg_cards",
-    "away_avg_goals_scored", "away_avg_goals_conceded",
-    "away_avg_corners", "away_avg_cards",
-]
+exclude_cols = ["HomeTeam", "AwayTeam", "Date", "FTR", "FTHG", "FTAG", "HC", "AC", "home_cards", "away_cards"]
+feature_cols = [col for col in df.columns if col not in exclude_cols]
 
 X = df[feature_cols].values
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
 
 fullTimeResult_map = {"H": 0, "D": 1, "A": 2}
 y_wdl = df["FTR"].map(fullTimeResult_map).values
@@ -37,14 +36,14 @@ y_goals_train, y_goals_val = y_goals_tensor[:split], y_goals_tensor[split:]
 y_corners_train, y_corners_val = y_corners_tensor[:split], y_corners_tensor[split:]
 y_cards_train, y_cards_val = y_cards_tensor[:split], y_cards_tensor[split:]
 
-model = MatchPredictor(input_size=8)
+model = MatchPredictor(input_size=len(feature_cols))
 
-optimizer = torch.optim.AdamW(model.parameters(), lr = 0.001)
+optimizer = torch.optim.AdamW(model.parameters(), lr = 0.0005)
 
 criterion_wdl = nn.CrossEntropyLoss()
 criterion_regression = nn.MSELoss()
 
-num_epochs = 100
+num_epochs = 200
 
 for epoch in range(num_epochs):
     model.train()
