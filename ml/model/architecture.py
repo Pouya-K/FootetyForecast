@@ -20,7 +20,7 @@ class MatchPredictor(nn.Module):
 
     def forward(self, x):
         shared = self.shared(x)
-        wdl = torch.softmax(self.wdl_head(shared), dim=1)
+        wdl = self.wdl_head(shared)
         goals = torch.relu(self.goals_head(shared))
         corners = torch.relu(self.corners_head(shared))
         cards = torch.relu(self.cards_head(shared))
