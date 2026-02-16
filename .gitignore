@@ -1,9 +1,23 @@
 # Environment variables
 .env
 
-# Python cache
+# Python
 __pycache__/
 *.pyc
+*.pyo
+
+# Node
+node_modules/
+
+# Next.js
+.next/
+
+# Model artifacts
+*.pt
+
+# Data files
+ml/data/raw/
+ml/data/*.csv
 
 # macOS
 .DS_Store
