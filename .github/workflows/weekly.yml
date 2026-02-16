@@ -27,6 +27,9 @@ jobs:
       - name: Build features
         run: python ml/features/build_features.py
 
+      - name: Create models directory
+        run: mkdir -p ml/models
+
       - name: Train model
         run: cd ml/model && python train.py
       
