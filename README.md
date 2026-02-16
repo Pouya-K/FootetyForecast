@@ -17,7 +17,7 @@
 <br/>
 
 <p>
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&pause=1000&color=3B82F6&center=true&vCenter=true&multiline=true&repeat=true&width=600&height=80&lines=Predicting+goals%2C+corners%2C+cards+%26+outcomes;Neural+network+retrained+weekly+%F0%9F%94%84;45+engineered+features+per+match+%F0%9F%93%8A" alt="Typing SVG" />
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&pause=1000&color=3B82F6&center=true&vCenter=true&repeat=true&width=400&height=40&lines=Predict.+Watch.+Repeat.+%E2%9A%BD" alt="Typing SVG" />
 </p>
 
 <br/>
