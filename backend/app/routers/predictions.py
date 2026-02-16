@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.prediction import Prediction
+from typing import List
 import sys
 import os
 
@@ -13,6 +14,13 @@ from predict import predict_match, get_all_teams
 from app.schemas.prediction import MatchRequest, MatchPrediction, MatchweekRequest, MatchweekResponse
 
 router = APIRouter(prefix="/api", tags=["predictions"])
+
+@router.get("/predictions", response_model=List[MatchPrediction])
+def get_predictions(matchweek: int, db: Session = Depends(get_db)):
+    predictions = db.query(Prediction).filter(
+        Prediction.matchweek == matchweek
+    ).all()
+    return predictions
 
 @router.get("/teams")
 def list_teams():

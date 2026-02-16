@@ -8,7 +8,6 @@ load_dotenv()
 API_KEY = os.getenv("FOOTBALL_DATA_KEY")
 BASE_URL = "https://api.football-data.org/v4"
 
-# football-data.org uses "FC" suffixed names, our data uses short names
 TEAM_NAME_MAP = {
     "Manchester City FC": "Man City",
     "Manchester United FC": "Man United",
@@ -38,16 +37,16 @@ TEAM_NAME_MAP = {
 def map_team_name(api_name):
     return TEAM_NAME_MAP.get(api_name, api_name)
 
-def get_week_range():
-    """Get Monday-Sunday of the current week."""
+def get_week_range(week_offset=0):
+    """Get Monday-Sunday for a given week. 0 = current, -1 = last week, 1 = next week."""
     today = datetime.now()
-    monday = today - timedelta(days=today.weekday())  # weekday() returns 0=Monday
+    monday = today - timedelta(days=today.weekday()) + timedelta(weeks=week_offset)
     sunday = monday + timedelta(days=6)
     return monday.strftime("%Y-%m-%d"), sunday.strftime("%Y-%m-%d")
 
-def get_weekly_fixtures():
-    """Get all Premier League games this week (Monday-Sunday)."""
-    date_from, date_to = get_week_range()
+def get_fixtures_by_week(week_offset=0):
+    """Get all Premier League games for a given week (Monday-Sunday)."""
+    date_from, date_to = get_week_range(week_offset)
 
     response = requests.get(
         f"{BASE_URL}/competitions/PL/matches",
@@ -65,11 +64,21 @@ def get_weekly_fixtures():
     fixtures = []
 
     for match in data.get("matches", []):
+        score = match.get("score", {})
+        full_time = score.get("fullTime", {})
+
         fixtures.append({
             "home_team": map_team_name(match["homeTeam"]["name"]),
             "away_team": map_team_name(match["awayTeam"]["name"]),
             "match_date": match["utcDate"][:10],
             "matchweek": match["matchday"],
+            "status": match["status"],
+            "home_score": full_time.get("home"),
+            "away_score": full_time.get("away"),
         })
 
-    return fixtures, date_from, date_to
+    return {
+        "week_start": date_from,
+        "week_end": date_to,
+        "fixtures": fixtures,
+    }
