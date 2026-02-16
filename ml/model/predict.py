@@ -78,15 +78,31 @@ def predict_match(home_team, away_team):
     T = 1.3
     wdl = torch.softmax(wdl / T, dim=1)
 
-    print(f"\n{'='*40}")
-    print(f"{home_team} (H) vs {away_team} (A)")
-    print(f"{'='*40}")
-    print(f"  {home_team} Win: {wdl[0][0]:.1%}")
-    print(f"  Draw: {wdl[0][1]:.1%}")
-    print(f"  {away_team} Win: {wdl[0][2]:.1%}")
-    print(f"  Goals: {goals[0][0]:.1f} - {goals[0][1]:.1f}")
-    print(f"  Corners: {corners[0][0]:.1f} - {corners[0][1]:.1f}")
-    print(f"  Cards: {cards[0][0]:.1f} - {cards[0][1]:.1f}")
+    return {
+        "home_team": home_team,
+        "away_team": away_team,
+        "home_win": round(wdl[0][0].item() * 100, 1),
+        "draw": round(wdl[0][1].item() * 100, 1),
+        "away_win": round(wdl[0][2].item() * 100, 1),
+        "home_goals": round(goals[0][0].item(), 1),
+        "away_goals": round(goals[0][1].item(), 1),
+        "home_corners": round(corners[0][0].item(), 1),
+        "away_corners": round(corners[0][1].item(), 1),
+        "home_cards": round(cards[0][0].item(), 1),
+        "away_cards": round(cards[0][1].item(), 1),
+    }
+
+def get_all_teams():
+    return sorted(df["HomeTeam"].unique().tolist())
 
 if __name__ == "__main__":
-    predict_match("Aston Villa", "Leeds")
+    result = predict_match("Aston Villa", "Leeds")
+    print(f"\n{'='*40}")
+    print(f"{result['home_team']} (H) vs {result['away_team']} (A)")
+    print(f"{'='*40}")
+    print(f"  {result['home_team']} Win: {result['home_win']}%")
+    print(f"  Draw: {result['draw']}%")
+    print(f"  {result['away_team']} Win: {result['away_win']}%")
+    print(f"  Goals: {result['home_goals']} - {result['away_goals']}")
+    print(f"  Corners: {result['home_corners']} - {result['away_corners']}")
+    print(f"  Cards: {result['home_cards']} - {result['away_cards']}")
