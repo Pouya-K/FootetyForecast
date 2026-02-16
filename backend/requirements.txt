@@ -1,5 +1,9 @@
 fastapi
 uvicorn
+sqlalchemy
+psycopg2-binary
+python-dotenv
+requests
 torch
 pandas
 scikit-learn

@@ -1,4 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.models.prediction import Prediction
 import sys
 import os
 
@@ -15,24 +18,53 @@ router = APIRouter(prefix="/api", tags=["predictions"])
 def list_teams():
     return get_all_teams()
 
-@router.post("/predict", response_model = MatchPrediction)
-def predict_single(match: MatchRequest):
+@router.post("/predict", response_model=MatchPrediction)
+def predict_single(match: MatchRequest, db: Session = Depends(get_db)):
     teams = get_all_teams()
     if match.home_team not in teams:
         raise HTTPException(status_code=400, detail=f"Home team {match.home_team} not found")
     if match.away_team not in teams:
         raise HTTPException(status_code=400, detail=f"Away team {match.away_team} not found")
     
+    # Check for duplicate
+    existing = db.query(Prediction).filter(
+        Prediction.home_team == match.home_team,
+        Prediction.away_team == match.away_team,
+        Prediction.match_date == match.match_date
+    ).first()
+
+    if existing:
+        return existing
+    
     result = predict_match(match.home_team, match.away_team)
+    result["match_date"] = match.match_date
+
+    db_prediction = Prediction(**result)
+    db.add(db_prediction)
+    db.commit()
     return result
 
 @router.post("/predict/matchweek", response_model=MatchweekResponse)
-def predict_matchweek(request: MatchweekRequest):
+def predict_matchweek(request: MatchweekRequest, db: Session = Depends(get_db)):
     predictions = []
 
     for fixture in request.fixtures:
-        result = predict_match(fixture.home_team, fixture.away_team)
-        predictions.append(result)
-    
-    return {"predictions": predictions}
+        # Check for duplicate
+        existing = db.query(Prediction).filter(
+            Prediction.home_team == fixture.home_team,
+            Prediction.away_team == fixture.away_team,
+            Prediction.match_date == fixture.match_date
+        ).first()
 
+        if existing:
+            predictions.append(existing)
+        else:
+            result = predict_match(fixture.home_team, fixture.away_team)
+            result["match_date"] = fixture.match_date
+
+            db_prediction = Prediction(**result)
+            db.add(db_prediction)
+            predictions.append(result)
+    
+    db.commit()
+    return {"predictions": predictions}
