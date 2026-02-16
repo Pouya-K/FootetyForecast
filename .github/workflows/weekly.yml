@@ -1,0 +1,39 @@
+name: Weekly Pipeline
+
+on:
+  schedule:
+    - cron: '0 22 * * 0'
+  workflow_dispatch:
+  
+jobs:
+  weekly-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+      
+      - name: Download latest data
+        run: python ml/data/download_csv.py
+
+      - name: Build features
+        run: python ml/features/build_features.py
+
+      - name: Train model
+        run: cd ml/model && python train.py
+      
+      - name: Commit updated model and data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ml/models/matchweek_v1.pt ml/data/features.csv ml/data/epl_combined.csv
+          git commit -m "weekly: retrain model and update data" || echo "No changes to commit"
+          git push
